@@ -3,50 +3,43 @@ import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import { useState, useRef } from 'react';
-
+import { useState , useEffect, useRef } from 'react';
+import axios from 'axios';
 
 export default function SearchTracks() {
     const [tracks, setTracks] = useState([]);
-    const trackName=useRef();
-    const API = 'https://api.spotify.com/v1/search?type=track';
-   
-    function searchTrack (trackName) {
-        const authToken =localStorage.getItem('token');
-        return(
-        fetch(`https://api.spotify.com/v1/search?q=${trackName}&type=track`,{ headers : { 'Authorization': `Bearer ${authToken}`}} )
-        
-        .then(response => response.json()) 
-        )
-    };
-   /* function searchTrack (trachName){
-        const authToken =localStorage.getItem('token');
-        
-        .get(`https://api.spotify.com/v1/search?q=${trackName}&type=track`) 
-        .set({'Authorization': 'Bearer' + authToken})
-        
-    }*/
-    
+    const [trackName, setTrackName] = useState([]);
+    //const trackName = useRef();
 
+    function SearchHandler()
+    {
+        axios.get(`https://api.spotify.com/v1/search?q=${trackName}&type=track`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }).then(res => {
+            setTracks(res.data.tracks.items);
+            console.log(res.data.tracks.items)
+          }).catch(err=>
+            {
+            
+            console.log(err)
+            });
 
-
-
-    function handleChange(trackName){
-        console.log(searchTrack(trackName))
-        if (trackName!=''){
-            tracks= JSON.parse(searchTrack(trackName));
-
-        }
     }
+   /* useEffect(() =>{
 
-
-
+        
+    })*/
+    function HandleTrackNameChange(event) {
+        setTrackName(event.target.value);
+     };
 
     return (
         <Grid container mt={0} mb={4} flexDirection="column">
             <Grid item container mb={2} mt={2}>
-                <TextField ref={trackName} mt={2} name="title"  onChange={handleChange} />
-                <Button variant="contained" sx={{marginLeft: 2}}>Search</Button>
+                <TextField /*ref={trackName}*/ onChange={HandleTrackNameChange} value={trackName} mt={2}/>
+                <Button onClick={() => SearchHandler(trackName)}  variant="contained" sx={{marginLeft: 2}}>Search</Button>
             </Grid>
             <Grid item container spacing={4}>
                 {tracks.map((track) => (
@@ -60,7 +53,10 @@ export default function SearchTracks() {
                                 }}
                                 image={track.album.images[0].url}
                                 alt={track.album.name}>
+                                
                             </CardMedia>
+                            
+                            <h3>Album Name: {track.album.name}</h3>
                         </Card>
                     </Grid>
                 ))}
